@@ -1,0 +1,514 @@
+/* Variables compartidas del tema: facilitan mantener consistentes superficies,
+   contraste, estados y radios sin repetir valores en cada componente. */
+:root {
+  color-scheme: dark;
+  --bg: #171717;
+  --surface: #1f1f1f;
+  --surface-raised: #262626;
+  --surface-hover: #2d2d2d;
+  --accent: #e23a3a;
+  --accent-soft: #ff6b6b;
+  --text: #f5f5f5;
+  --muted: #b9b9b9;
+  --border: #393939;
+  --success: #7ed6a3;
+  --danger: #ff8b8b;
+  --radius: 18px;
+  font-family: Poppins, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+
+/* Base de la página y estados de teclado comunes a formularios y controles. */
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 82% 0%, rgb(226 58 58 / 11%), transparent 38rem),
+    var(--bg);
+}
+
+button, input, select { font: inherit; }
+button { transition: background-color .18s ease, border-color .18s ease, transform .18s ease; }
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid rgb(255 107 107 / 40%);
+  outline-offset: 2px;
+}
+button:disabled { cursor: not-allowed; opacity: .55; }
+[hidden] { display: none !important; }
+
+/* Marca compartida entre páginas; se evita deformar el logotipo al adaptar el
+   ancho disponible y se reduce su tamaño en el encabezado de inventario. */
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(210px, 100%);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-decoration: none;
+  transition: transform .2s ease, opacity .2s ease;
+}
+
+.brand:hover { transform: translateY(-1px); opacity: .94; }
+
+.brand-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  flex: 0 1 auto;
+  border-radius: 0;
+  background: transparent;
+  object-fit: contain;
+}
+
+body:has(.layout) .brand { width: min(135px, 100%); }
+
+/* Presentación de acceso: el selector por formulario aísla este diseño de las
+   reglas del módulo privado que siguen a continuación. */
+body:has(#login-form) {
+  display: grid;
+  padding: 28px;
+  place-items: center;
+}
+
+body:has(#login-form) main {
+  position: relative;
+  width: min(100%, 460px);
+  padding: clamp(28px, 7vw, 48px);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--bg);
+  box-shadow: 0 28px 90px rgb(0 0 0 / 42%);
+}
+
+body:has(#login-form) main::before {
+  position: absolute;
+  top: 0;
+  right: 12%;
+  left: 12%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  content: "";
+}
+
+body:has(#login-form) .brand { margin: 0 0 28px; }
+
+body:has(#login-form) h1 {
+  font-size: clamp(1.7rem, 6vw, 2.15rem);
+  letter-spacing: -.04em;
+}
+
+body:has(#login-form) .intro {
+  margin: 10px 0 30px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+body:has(#login-form) label {
+  display: block;
+  margin: 19px 0 8px;
+  color: #e8e8e8;
+  font-size: .88rem;
+  font-weight: 600;
+}
+
+body:has(#login-form) input {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #171717;
+  color: var(--text);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+body:has(#login-form) input:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(226 58 58 / 13%);
+}
+
+body:has(#login-form) button {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 26px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body:has(#login-form) button:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-soft);
+  background: var(--accent-soft);
+}
+
+/* Estructura del módulo de inventario: cabecera fija, navegación, columnas,
+   paneles y tablas se adaptan al espacio disponible sin alterar su semántica. */
+body:has(.layout) header {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+  background: rgb(23 23 23 / 92%);
+  color: var(--text);
+  backdrop-filter: blur(16px);
+}
+
+body:has(.layout) header .container {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+body:has(.layout) .navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  min-height: 94px;
+  padding: .7rem 0;
+}
+
+body:has(.layout) .main-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2.2vw, 30px);
+}
+
+body:has(.layout) .main-nav a {
+  position: relative;
+  padding: 10px 0;
+  color: #e8e8e8;
+  font-size: .86rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color .2s ease;
+}
+
+body:has(.layout) .main-nav a::after {
+  position: absolute;
+  right: 0;
+  bottom: 3px;
+  left: 0;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: var(--accent);
+  content: "";
+  transition: transform .2s ease;
+}
+
+body:has(.layout) .main-nav a:hover { color: var(--accent-soft); }
+body:has(.layout) .main-nav a:hover::after { transform: scaleX(1); }
+
+body:has(.layout) header button {
+  min-height: 40px;
+  padding: 9px 16px;
+  border: 1px solid #555;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text);
+  font-size: .86rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+body:has(.layout) header button:hover {
+  border-color: var(--accent);
+  background: rgb(226 58 58 / 12%);
+}
+
+body:has(.layout) main {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(26px, 4vw, 52px) 0;
+}
+
+body:has(.layout) .page-heading {
+  margin: 4px 0 30px;
+}
+
+body:has(.layout) .page-eyebrow {
+  margin: 0 0 10px;
+  color: var(--accent-soft);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+body:has(.layout) .page-heading h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -.05em;
+}
+
+body:has(.layout) .page-heading > p:last-child {
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+body:has(.layout) .subtitle {
+  margin: 10px 0 30px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+body:has(.layout) .layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(290px, 370px);
+  gap: 24px;
+  align-items: start;
+}
+
+body:has(.layout) .catalog-column {
+  display: grid;
+  min-width: 0;
+  gap: 24px;
+}
+
+body:has(.layout) section,
+body:has(.layout) aside {
+  min-width: 0;
+  padding: clamp(18px, 2.5vw, 26px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(145deg, rgb(38 38 38 / 92%), var(--surface) 68%);
+  box-shadow: 0 18px 50px rgb(0 0 0 / 18%);
+}
+
+body:has(.layout) aside {
+  position: sticky;
+  top: 96px;
+}
+
+body:has(.layout) h2 {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0 0 20px;
+  font-size: 1.08rem;
+  letter-spacing: -.015em;
+}
+
+body:has(.layout) h2::before {
+  width: 4px;
+  height: 19px;
+  border-radius: 5px;
+  background: var(--accent);
+  content: "";
+}
+
+/* El contenedor desplazable mantiene las tablas utilizables cuando sus columnas
+   no caben en pantallas angostas. */
+body:has(.layout) .table-wrap {
+  overflow: auto;
+  border: 1px solid #353535;
+  border-radius: 12px;
+}
+
+body:has(.layout) table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+body:has(.layout) th,
+body:has(.layout) td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #343434;
+  white-space: nowrap;
+}
+
+body:has(.layout) th {
+  background: #252525;
+  color: #c9c9c9;
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+body:has(.layout) td { color: #e8e8e8; font-size: .87rem; }
+body:has(.layout) tbody tr:last-child td { border-bottom: 0; }
+body:has(.layout) tbody tr:hover { background: rgb(255 255 255 / 3%); }
+
+body:has(.layout) form label {
+  display: block;
+  margin: 16px 0 8px;
+  color: #e8e8e8;
+  font-size: .84rem;
+  font-weight: 600;
+}
+
+body:has(.layout) form input,
+body:has(.layout) form select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #414141;
+  border-radius: 10px;
+  background: #181818;
+  color: var(--text);
+  font-size: .88rem;
+}
+
+body:has(.layout) form input:focus,
+body:has(.layout) form select:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(226 58 58 / 12%);
+}
+
+body:has(.layout) .submit-button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 20px;
+  padding: 10px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: .86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body:has(.layout) .submit-button:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-soft);
+  background: var(--accent-soft);
+}
+
+body:has(.layout) .management-card {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+
+body:has(.layout) .management-card h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: .97rem;
+}
+
+body:has(.layout) .management-card form label { margin-top: 13px; }
+body:has(.layout) .management-card .submit-button { margin-top: 16px; }
+body:has(.layout) .form-hint { margin: 9px 0 0; color: var(--muted); font-size: .8rem; line-height: 1.5; }
+body:has(.layout) button:disabled { cursor: not-allowed; opacity: .5; }
+body:has(.layout) [role="status"],
+body:has(.layout) [role="alert"] { min-height: 1.4em; margin: 12px 0 0; font-size: .82rem; }
+body:has(.layout) [role="status"] { color: var(--success); }
+body:has(.layout) [role="alert"] { color: var(--danger); }
+
+/* Mensajes de stock y búsqueda comparten jerarquía visual con los estados de
+   accesibilidad; sus colores distinguen alerta de inventario al día. */
+body:has(.layout) .stock-alert {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: .86rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+body:has(.layout) .stock-alert.is-critical {
+  border-color: rgb(255 139 139 / 30%);
+  background: rgb(226 58 58 / 10%);
+  color: #ffaaaa;
+}
+
+body:has(.layout) .stock-alert.is-clear {
+  border-color: rgb(126 214 163 / 28%);
+  background: rgb(126 214 163 / 8%);
+  color: var(--success);
+}
+
+body:has(.layout) .product-search-label {
+  display: block;
+  margin: 0 0 8px;
+  color: #e8e8e8;
+  font-size: .84rem;
+  font-weight: 600;
+}
+
+body:has(.layout) .product-search {
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid #414141;
+  border-radius: 10px;
+  background: #181818;
+  color: var(--text);
+  font-size: .88rem;
+}
+
+body:has(.layout) .product-search:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(226 58 58 / 12%);
+}
+
+body:has(.layout) .product-search-status {
+  margin: -7px 0 14px;
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+body:has(.layout) tbody tr.stock-critical { background: rgb(226 58 58 / 8%); }
+body:has(.layout) tbody tr.stock-critical:hover { background: rgb(226 58 58 / 13%); }
+body:has(.layout) tbody tr.stock-critical td { color: #f4caca; }
+body:has(.layout) tbody tr.stock-critical td.stock-critical-value {
+  color: #ff8b8b;
+  font-weight: 700;
+}
+
+/* Ajustes progresivos: estrecha espaciado en tabletas y apila operaciones en
+   móvil, donde el panel deja de ser sticky para no ocultar contenido. */
+@media (max-width: 900px) {
+  body:has(.layout) .layout { grid-template-columns: minmax(0, 1fr) minmax(270px, 320px); gap: 16px; }
+  body:has(.layout) th,
+  body:has(.layout) td { padding: 11px 10px; }
+  body:has(.layout) .navbar { gap: 12px; }
+  body:has(.layout) .main-nav { gap: 14px; }
+}
+
+@media (max-width: 720px) {
+  body:has(.layout) .navbar { min-height: auto; flex-wrap: wrap; }
+  body:has(.layout) .brand { width: min(135px, calc(100% - 118px)); }
+  body:has(.layout) .main-nav { order: 3; width: 100%; justify-content: space-around; border-top: 1px solid var(--border); }
+  body:has(.layout) .layout { grid-template-columns: 1fr; }
+  body:has(.layout) aside { position: static; }
+}
+
+@media (max-width: 420px) {
+  body:has(#login-form) { padding: 16px; }
+  body:has(#login-form) main { padding: 28px 22px; }
+  body:has(.layout) header .container { width: calc(100% - 1.25rem); }
+  body:has(.layout) header button { padding: 8px 10px; font-size: .78rem; }
+}
+
+/* Respeta la preferencia del sistema reduciendo transiciones y desplazamientos. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
