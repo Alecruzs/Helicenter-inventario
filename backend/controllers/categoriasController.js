@@ -32,3 +32,61 @@ export async function listarCategorias(req, res) {
     return res.status(500).json({ error: 'No se pudieron listar las categorías.' });
   }
 }
+
+/** Actualiza el nombre de una categoría existente. */
+export async function actualizarCategoria(req, res) {
+  const categoriaId = Number(req.params.id);
+  const { nombre } = req.body ?? {};
+
+  if (
+    !Number.isSafeInteger(categoriaId) ||
+    categoriaId <= 0 ||
+    typeof nombre !== 'string' ||
+    nombre.trim().length === 0 ||
+    nombre.trim().length > 255
+  ) {
+    return res.status(400).json({
+      error: 'Envía un id y un nombre de categoría válidos.'
+    });
+  }
+
+  try {
+    const categoria = await Categoria.findByPk(categoriaId);
+    if (!categoria) {
+      return res.status(404).json({ error: 'La categoría solicitada no existe.' });
+    }
+
+    await categoria.update({ nombre: nombre.trim() });
+    return res.json(categoria);
+  } catch (error) {
+    console.error('No se pudo actualizar la categoría:', error);
+    return res.status(500).json({ error: 'No se pudo actualizar la categoría.' });
+  }
+}
+
+/** Conserva la integridad referencial al impedir bajas de categorías en uso. */
+export async function eliminarCategoria(req, res) {
+  const categoriaId = Number(req.params.id);
+
+  if (!Number.isSafeInteger(categoriaId) || categoriaId <= 0) {
+    return res.status(400).json({ error: 'El id de la categoría no es válido.' });
+  }
+
+  try {
+    const eliminadas = await Categoria.destroy({ where: { id: categoriaId } });
+    if (eliminadas === 0) {
+      return res.status(404).json({ error: 'La categoría solicitada no existe.' });
+    }
+
+    return res.status(204).end();
+  } catch (error) {
+    if (error.name === 'SequelizeForeignKeyConstraintError') {
+      return res.status(400).json({
+        error: 'No se puede eliminar una categoría que tiene productos asociados.'
+      });
+    }
+
+    console.error('No se pudo eliminar la categoría:', error);
+    return res.status(500).json({ error: 'No se pudo eliminar la categoría.' });
+  }
+}

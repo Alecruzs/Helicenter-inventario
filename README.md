@@ -65,8 +65,11 @@ stock y un historial de operaciones.
 ## Roles
 
 - **Administrador:** puede mantener categorías y productos, y gestionar
-  cuentas de empleados.
+  cuentas de personal.
+- **Almacenista:** puede mantener categorías y productos, consultar el catálogo
+  y registrar movimientos.
 - **Empleado:** puede consultar el catálogo y registrar movimientos.
+- **Mecánico:** puede consultar el catálogo y el historial de movimientos.
 
 La interfaz adapta los controles al rol para facilitar su uso. La autorización
 real se valida también en el servidor; ocultar un control en el navegador no
@@ -75,6 +78,10 @@ concede permisos.
 ## Configuración y seguridad
 
 - `.env` contiene credenciales locales y está excluido de Git.
+- Configura `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_PORT` y `SMTP_SECURE`
+  para habilitar el formulario de contacto y el envío de credenciales al crear
+  cuentas de personal. Sin SMTP disponible, no se completará la creación de
+  una cuenta nueva.
 - Usa un `JWT_SECRET` aleatorio y de al menos 32 bytes.
 - La cookie de autenticación es `HttpOnly`, `SameSite=Strict` y usa el atributo
   `Secure` en producción.

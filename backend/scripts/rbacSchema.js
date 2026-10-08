@@ -23,7 +23,7 @@ export async function migrateRbacSchema(sequelize, adminEmail) {
       { transaction }
     );
     await sequelize.query(
-      'UPDATE "usuarios" SET "rol" = \'empleado\' WHERE "rol" IS NULL OR "rol" NOT IN (\'admin\', \'empleado\')',
+      'UPDATE "usuarios" SET "rol" = \'empleado\' WHERE "rol" IS NULL OR "rol" NOT IN (\'admin\', \'empleado\', \'almacenista\', \'mecanico\')',
       { transaction }
     );
     await sequelize.query(

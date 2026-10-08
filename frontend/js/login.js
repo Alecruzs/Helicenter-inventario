@@ -30,7 +30,7 @@ form.addEventListener('submit', async (event) => {
       return;
     }
 
-    if (!['admin', 'empleado'].includes(result.rol)) {
+    if (!['admin', 'empleado', 'almacenista', 'mecanico'].includes(result.rol)) {
       errorMessage.textContent = 'La cuenta no tiene un rol de acceso válido.';
       return;
     }
@@ -38,6 +38,7 @@ form.addEventListener('submit', async (event) => {
     // Se usa únicamente para adaptar la interfaz; el servidor valida siempre
     // el token y el rol antes de servir datos u operaciones protegidas.
     localStorage.setItem('userRole', result.rol);
+    localStorage.setItem('userEmail', result.email);
     window.location.href = '/inventario';
   } catch {
     errorMessage.textContent = 'No se pudo conectar con el servidor. Inténtalo de nuevo.';

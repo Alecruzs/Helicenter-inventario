@@ -40,7 +40,7 @@ const Usuario = sequelize.define(
       allowNull: false,
       defaultValue: 'empleado',
       validate: {
-        isIn: [['admin', 'empleado']]
+        isIn: [['admin', 'empleado', 'almacenista', 'mecanico']]
       }
     }
   },

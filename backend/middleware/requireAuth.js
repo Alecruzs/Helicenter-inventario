@@ -22,7 +22,7 @@ export function requireAuth(req, res, next) {
     if (
       typeof payload !== 'object' ||
       typeof payload.sub !== 'string' ||
-      !['admin', 'empleado'].includes(payload.rol)
+      !['admin', 'empleado', 'almacenista', 'mecanico'].includes(payload.rol)
     ) {
       return denyRequest(req, res);
     }

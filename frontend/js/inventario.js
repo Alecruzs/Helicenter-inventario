@@ -16,11 +16,16 @@ const movementForm = document.querySelector('#movement-form');
 const movementStatus = document.querySelector('#movement-status');
 const movementError = document.querySelector('#movement-error');
 const movementSubmit = document.querySelector('#movement-submit');
+const responsibleContainer = document.querySelector('#contenedor-responsable');
 const categoryForm = document.querySelector('#category-form');
 const categoryNameInput = document.querySelector('#category-name');
 const categorySubmit = document.querySelector('#category-submit');
 const categoryStatus = document.querySelector('#category-status');
 const categoryError = document.querySelector('#category-error');
+const categoriesBody = document.querySelector('#tabla-categorias');
+const categoryActionsHeader = document.querySelector('#category-actions-header');
+const categoryListStatus = document.querySelector('#category-list-status');
+const categoryListError = document.querySelector('#category-list-error');
 const productForm = document.querySelector('#product-form');
 const newProductCategory = document.querySelector('#new-product-category');
 const productCategoryHint = document.querySelector('#product-category-hint');
@@ -36,9 +41,17 @@ const editProductCategory = document.querySelector('#edit-product-category');
 const editMinimumStock = document.querySelector('#edit-minimum-stock');
 const editProductSubmit = document.querySelector('#edit-product-submit');
 const editProductError = document.querySelector('#edit-product-error');
+const editCategoryModalElement = document.querySelector('#modalEditarCategoria');
+const editCategoryModal = bootstrap.Modal.getOrCreateInstance(editCategoryModalElement);
+const editCategoryForm = document.querySelector('#edit-category-form');
+const editCategoryId = document.querySelector('#edit-category-id');
+const editCategoryName = document.querySelector('#edit-category-name');
+const editCategorySubmit = document.querySelector('#edit-category-submit');
+const editCategoryError = document.querySelector('#edit-category-error');
 const productActionsHeader = document.querySelector('#product-actions-header');
 const categoryManagement = document.querySelector('#category-management');
 const productManagement = document.querySelector('#product-management');
+const movementManagement = document.querySelector('#inventory-movements-item');
 const staffManagementButton = document.querySelector('#staff-management-button');
 const employeeForm = document.querySelector('#employee-form');
 const employeeSubmit = document.querySelector('#employee-submit');
@@ -50,13 +63,18 @@ const usersError = document.querySelector('#users-error');
 const staffModalElement = document.querySelector('#modalGestionPersonal');
 // El rol persistido mejora la presentación inicial, pero nunca sustituye a la
 // autorización RBAC que aplica la API.
-const isAdmin = localStorage.getItem('userRole') === 'admin';
+const userRole = localStorage.getItem('userRole');
+const isAdmin = userRole === 'admin';
+const canManageProducts = ['admin', 'almacenista'].includes(userRole);
+const isMechanic = userRole === 'mecanico';
 let categoriasDisponibles = [];
 
 // Muestra controles administrativos solo a modo de experiencia de usuario.
-productActionsHeader.classList.toggle('d-none', !isAdmin);
-categoryManagement.classList.toggle('d-none', !isAdmin);
-productManagement.classList.toggle('d-none', !isAdmin);
+productActionsHeader.classList.toggle('d-none', !canManageProducts);
+categoryActionsHeader.classList.toggle('d-none', !canManageProducts);
+categoryManagement.classList.toggle('d-none', !canManageProducts);
+productManagement.classList.toggle('d-none', !canManageProducts);
+movementManagement.classList.toggle('d-none', isMechanic);
 staffManagementButton.classList.toggle('d-none', !isAdmin);
 
 staffModalElement.addEventListener('show.bs.modal', () => {
@@ -127,6 +145,79 @@ async function cargarUsuarios() {
   } catch (error) {
     usersStatus.textContent = '';
     usersError.textContent = error.message;
+  }
+}
+
+/** Adapta el campo responsable al rol y muestra solo nombres entregados por la API. */
+async function cargarCampoResponsable() {
+  movementStatus.textContent = '';
+  movementError.textContent = '';
+  responsibleContainer.replaceChildren();
+
+  const userRole = localStorage.getItem('userRole');
+  const userName = localStorage.getItem('userName')
+    || localStorage.getItem('userEmail')
+    || '';
+  const fieldGroup = document.createElement('div');
+  fieldGroup.className = 'mb-3';
+  const label = document.createElement('label');
+  label.className = 'form-label';
+  label.htmlFor = 'responsable';
+  label.textContent = 'Responsable / proveedor';
+  fieldGroup.append(label);
+
+  try {
+    if (userRole === 'admin') {
+      const users = await fetchJSON('/api/usuarios');
+      if (!Array.isArray(users)) {
+        throw new Error('La respuesta del directorio de usuarios no es válida.');
+      }
+
+      const select = document.createElement('select');
+      select.id = 'responsable';
+      select.name = 'responsable_proveedor';
+      select.className = 'form-select';
+      select.required = true;
+
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Selecciona un responsable';
+      select.append(placeholder);
+
+      for (const user of users) {
+        const name = typeof user.nombre === 'string' && user.nombre.trim()
+          ? user.nombre.trim()
+          : user.email;
+        if (typeof name !== 'string' || !name.trim()) continue;
+
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        select.append(option);
+      }
+      fieldGroup.append(select);
+    } else if (['empleado', 'almacenista'].includes(userRole)) {
+      if (!userName) {
+        throw new Error('No se encontró el nombre o correo del usuario en la sesión local.');
+      }
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.id = 'responsable';
+      input.name = 'responsable_proveedor';
+      input.className = 'form-control';
+      input.maxLength = 255;
+      input.value = userName;
+      input.readOnly = true;
+      input.required = true;
+      fieldGroup.append(input);
+    } else {
+      throw new Error('No se pudo determinar el rol del usuario. Inicia sesión nuevamente.');
+    }
+
+    responsibleContainer.append(fieldGroup);
+  } catch (error) {
+    movementError.textContent = error.message;
   }
 }
 
@@ -225,9 +316,9 @@ async function cargarProductos() {
       }
 
       const actionsCell = document.createElement('td');
-      actionsCell.classList.toggle('d-none', !isAdmin);
+      actionsCell.classList.toggle('d-none', !canManageProducts);
       const editButton = document.createElement('button');
-      editButton.className = `btn btn-sm btn-outline-primary${isAdmin ? '' : ' d-none'}`;
+      editButton.className = `btn btn-sm btn-outline-primary${canManageProducts ? '' : ' d-none'}`;
       editButton.type = 'button';
       editButton.textContent = 'Editar';
       editButton.addEventListener('click', () => {
@@ -239,13 +330,14 @@ async function cargarProductos() {
         );
       });
       const deleteButton = document.createElement('button');
-      deleteButton.className = `btn btn-sm btn-outline-danger ms-2${isAdmin ? '' : ' d-none'}`;
+      deleteButton.className = `btn btn-sm btn-outline-danger ms-2${canManageProducts ? '' : ' d-none'}`;
       deleteButton.type = 'button';
       deleteButton.textContent = 'Eliminar';
       deleteButton.addEventListener('click', () => {
         eliminarProducto(product.id, deleteButton);
       });
-      actionsCell.append(editButton, deleteButton);
+      actionsCell.append(editButton);
+      if (isAdmin) actionsCell.append(deleteButton);
       row.append(actionsCell);
       productsBody.append(row);
     }
@@ -346,17 +438,17 @@ employeeForm.addEventListener('submit', async (event) => {
   const payload = {
     nombre: String(formData.get('nombre')).trim(),
     email: String(formData.get('email')).trim(),
-    password: String(formData.get('password'))
+    rol: String(formData.get('rol'))
   };
 
   try {
-    await fetchJSON('/api/usuarios', {
+    const result = await fetchJSON('/api/usuarios', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     employeeForm.reset();
-    employeeStatus.textContent = 'Empleado creado correctamente.';
+    employeeStatus.textContent = result.mensaje || 'Usuario creado correctamente.';
     await cargarUsuarios();
   } catch (error) {
     employeeError.textContent = error.message;
@@ -417,11 +509,53 @@ async function cargarMovimientos() {
  */
 async function cargarCategorias() {
   categoryError.textContent = '';
+  categoryListError.textContent = '';
   productError.textContent = '';
+  categoryListStatus.textContent = 'Cargando categorías…';
 
   try {
     const categories = await fetchJSON('/api/categorias');
+    if (!Array.isArray(categories)) {
+      throw new Error('La respuesta del catálogo de categorías no es válida.');
+    }
+
     categoriasDisponibles = categories;
+    categoriesBody.replaceChildren();
+
+    for (const category of categories) {
+      const row = document.createElement('tr');
+      const nameCell = document.createElement('td');
+      nameCell.textContent = category.nombre;
+      row.append(nameCell);
+
+      if (canManageProducts) {
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'text-nowrap';
+
+        const editButton = document.createElement('button');
+        editButton.className = 'btn btn-sm btn-outline-primary';
+        editButton.type = 'button';
+        editButton.textContent = 'Editar';
+        editButton.addEventListener('click', () => {
+          abrirModalEditarCategoria(category.id, category.nombre);
+        });
+
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-sm btn-outline-danger ms-2';
+        deleteButton.type = 'button';
+        deleteButton.textContent = 'Eliminar';
+        deleteButton.addEventListener('click', () => {
+          void eliminarCategoria(category.id, deleteButton);
+        });
+
+        actionsCell.append(editButton);
+        if (isAdmin) actionsCell.append(deleteButton);
+        row.append(actionsCell);
+      }
+
+      categoriesBody.append(row);
+    }
+
     const selectedId = newProductCategory.value;
     newProductCategory.replaceChildren(
       new Option('Selecciona una categoría', '')
@@ -439,13 +573,67 @@ async function cargarCategorias() {
     newProductCategory.disabled = !hasCategories;
     productSubmit.disabled = !hasCategories;
     productCategoryHint.hidden = hasCategories;
+    categoryListStatus.textContent = hasCategories
+      ? `${categories.length} categoría(s) registradas.`
+      : 'No hay categorías registradas.';
   } catch (error) {
     categoryError.textContent = error.message;
+    categoryListStatus.textContent = '';
+    categoryListError.textContent = error.message;
     productCategoryHint.hidden = false;
     newProductCategory.disabled = true;
     productSubmit.disabled = true;
   }
 }
+
+function abrirModalEditarCategoria(id, nombre) {
+  editCategoryId.value = String(id);
+  editCategoryName.value = nombre;
+  editCategoryError.textContent = '';
+  editCategoryModal.show();
+}
+
+async function eliminarCategoria(id, button) {
+  if (!window.confirm('¿Eliminar esta categoría de forma permanente?')) return;
+
+  button.disabled = true;
+  try {
+    await fetchJSON(`/api/categorias/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+    await cargarCategorias();
+    categoryStatus.textContent = 'Categoría eliminada correctamente.';
+  } catch (error) {
+    window.alert(error.message);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+editCategoryForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  editCategoryError.textContent = '';
+  editCategorySubmit.disabled = true;
+
+  const formData = new FormData(editCategoryForm);
+  const nombre = String(formData.get('nombre')).trim();
+
+  try {
+    await fetchJSON(`/api/categorias/${encodeURIComponent(editCategoryId.value)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre })
+    });
+    editCategoryModal.hide();
+    editCategoryForm.reset();
+    await cargarCategorias();
+    categoryStatus.textContent = 'Categoría actualizada correctamente.';
+  } catch (error) {
+    editCategoryError.textContent = error.message;
+  } finally {
+    editCategorySubmit.disabled = false;
+  }
+});
 
 categoryForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -504,6 +692,12 @@ movementForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   movementStatus.textContent = '';
   movementError.textContent = '';
+
+  if (!document.getElementById('responsable')) {
+    movementError.textContent = 'El campo de responsable aún no está disponible. Inténtalo nuevamente.';
+    return;
+  }
+
   movementSubmit.disabled = true;
 
   const formData = new FormData(movementForm);
@@ -511,7 +705,7 @@ movementForm.addEventListener('submit', async (event) => {
     productoId: Number(formData.get('productoId')),
     tipo: formData.get('tipo'),
     cantidad: Number(formData.get('cantidad')),
-    responsable_proveedor: String(formData.get('responsable_proveedor')).trim()
+    responsable_proveedor: document.getElementById('responsable').value.trim()
   };
 
   try {
@@ -536,14 +730,68 @@ document.querySelector('#logout-button').addEventListener('click', async () => {
   try {
     await fetchJSON('/api/logout', { method: 'POST' });
     localStorage.removeItem('userRole');
-    window.location.href = '/login';
+    localStorage.removeItem('userEmail');
+    window.location.href = '/index.html';
   } catch (error) {
     movementError.textContent = error.message;
   }
 });
 
-document.querySelector('#print-movements').addEventListener('click', () => {
-  window.print();
-});
+function exportarPDF() {
+  movementsError.textContent = '';
+  const { jsPDF } = window.jspdf ?? {};
+  const movementsTable = document.querySelector('#movements-section table');
 
-await Promise.all([cargarCategorias(), cargarProductos(), cargarMovimientos()]);
+  if (typeof jsPDF !== 'function') {
+    movementsError.textContent = 'No se pudo cargar la librería para exportar a PDF.';
+    return;
+  }
+  if (!movementsTable) {
+    movementsError.textContent = 'No se encontró la tabla de movimientos para exportar.';
+    return;
+  }
+
+  try {
+    const pdf = new jsPDF({ orientation: 'landscape' });
+    if (typeof pdf.autoTable !== 'function') {
+      throw new Error('No se pudo cargar el complemento jsPDF-AutoTable.');
+    }
+
+    pdf.autoTable({ html: movementsTable });
+    pdf.save('historial_movimientos.pdf');
+  } catch (error) {
+    movementsError.textContent = `No se pudo exportar el historial a PDF: ${error.message}`;
+  }
+}
+
+function exportarExcel() {
+  movementsError.textContent = '';
+  const xlsx = window.XLSX;
+  const movementsTable = document.querySelector('#movements-section table');
+
+  if (!xlsx?.utils?.table_to_book || typeof xlsx.writeFile !== 'function') {
+    movementsError.textContent = 'No se pudo cargar la librería para exportar a Excel.';
+    return;
+  }
+  if (!movementsTable) {
+    movementsError.textContent = 'No se encontró la tabla de movimientos para exportar.';
+    return;
+  }
+
+  try {
+    const workbook = xlsx.utils.table_to_book(movementsTable, { sheet: 'Historial' });
+    xlsx.writeFile(workbook, 'historial_movimientos.xlsx');
+  } catch (error) {
+    movementsError.textContent = `No se pudo exportar el historial a Excel: ${error.message}`;
+  }
+}
+
+document.querySelector('#btn-exportar-pdf').addEventListener('click', exportarPDF);
+document.querySelector('#btn-exportar-excel').addEventListener('click', exportarExcel);
+
+await Promise.all([
+  cargarCategorias(),
+  cargarProductos(),
+  cargarMovimientos(),
+  ...(isMechanic ? [] : [cargarCampoResponsable()])
+]);

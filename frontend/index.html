@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#171717">
+  <title>Helicenter - ERP Inventario</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #171717;
+      --surface: #1f1f1f;
+      --accent: #e23a3a;
+      --accent-soft: #ff6b6b;
+      --text: #f5f5f5;
+      --muted: #d9d9d9;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html {
+      scroll-behavior: smooth;
+      color-scheme: dark;
+    }
+    body {
+      position: relative;
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+      overflow-x: hidden;
+      margin: 0;
+      background:
+        radial-gradient(600px 520px at 18% 18%, rgb(226 58 58 / 22%), transparent 38%),
+        radial-gradient(700px 560px at 75% 82%, rgb(255 255 255 / 5%), transparent 35%),
+        linear-gradient(180deg, #1a1a1a 0%, #231919 42%, #151515 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    body::before {
+      position: fixed;
+      z-index: 0;
+      inset: 0;
+      background: linear-gradient(120deg, rgb(226 58 58 / 10%), rgb(255 255 255 / 2%));
+      content: "";
+      filter: blur(46px) saturate(110%);
+      opacity: .75;
+      pointer-events: none;
+    }
+    .site-header {
+      position: sticky;
+      z-index: 2;
+      top: 0;
+      border-bottom: 1px solid rgb(255 255 255 / 7%);
+      background: rgb(20 20 20 / 88%);
+      box-shadow: 0 15px 45px rgb(0 0 0 / 15%);
+      backdrop-filter: blur(12px);
+    }
+    .site-header .container,
+    .hero-section,
+    .site-footer {
+      position: relative;
+      z-index: 1;
+      width: min(1180px, calc(100% - 2rem));
+      margin-right: auto;
+      margin-left: auto;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .9rem;
+      padding: .55rem 0;
+      color: var(--text);
+    }
+    .brand:hover { color: #fff; }
+    .brand-logo {
+      width: 72px;
+      height: 64px;
+      object-fit: contain;
+    }
+    .brand-copy {
+      display: grid;
+      gap: .15rem;
+      line-height: 1.15;
+    }
+    .brand-name {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .brand-subtitle {
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .hero-section {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      padding-top: clamp(2rem, 6vh, 5rem);
+      padding-bottom: clamp(2rem, 6vh, 5rem);
+    }
+    .hero-panel {
+      position: relative;
+      isolation: isolate;
+      display: grid;
+      width: 100%;
+      min-height: min(680px, 76vh);
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+      align-items: center;
+      gap: clamp(2rem, 5vw, 5rem);
+      overflow: hidden;
+      padding: clamp(2rem, 6vw, 5.5rem);
+      border: 1px solid rgb(255 255 255 / 11%);
+      border-radius: clamp(24px, 4vw, 42px);
+      background: linear-gradient(145deg, rgb(38 38 38 / 94%), rgb(25 25 25 / 92%) 65%);
+      box-shadow: 0 40px 100px rgb(0 0 0 / 32%);
+    }
+    .hero-panel::before {
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 8% 4%, rgb(226 58 58 / 20%), transparent 48%),
+        linear-gradient(120deg, transparent 52%, rgb(255 255 255 / 3%));
+      content: "";
+      pointer-events: none;
+    }
+    .hero-copy {
+      max-width: 740px;
+    }
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      margin-bottom: 1.5rem;
+      padding: .6rem 1rem;
+      border: 1px solid rgb(255 107 107 / 32%);
+      border-radius: 999px;
+      background: rgb(226 58 58 / 10%);
+      color: #ffb0b0;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .hero-label::before {
+      width: .5rem;
+      height: .5rem;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      box-shadow: 0 0 14px rgb(255 107 107 / 75%);
+      content: "";
+    }
+    .hero-copy h1 {
+      max-width: 780px;
+      margin: 0;
+      font-size: clamp(2.6rem, 5.2vw, 5rem);
+      font-weight: 700;
+      letter-spacing: -.055em;
+      line-height: 1.04;
+    }
+    .hero-copy h1 span { color: var(--accent-soft); }
+    .hero-copy p {
+      max-width: 680px;
+      margin: 1.5rem 0 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.3vw, 1.12rem);
+      line-height: 1.85;
+    }
+    .hero-actions { margin-top: 2rem; }
+    .access-button {
+      display: inline-flex;
+      min-height: 3.5rem;
+      align-items: center;
+      justify-content: center;
+      gap: .8rem;
+      padding: .85rem 1.5rem;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ef5555, #b91f1f);
+      box-shadow: 0 18px 38px rgb(226 58 58 / 24%);
+      color: #fff;
+      font-weight: 700;
+      transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+    }
+    .access-button::after {
+      content: "→";
+      font-size: 1.2rem;
+      transition: transform .2s ease;
+    }
+    .access-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 22px 46px rgb(226 58 58 / 32%);
+      color: #fff;
+      filter: brightness(1.06);
+    }
+    .access-button:hover::after { transform: translateX(3px); }
+    .access-button:focus-visible,
+    .brand:focus-visible {
+      outline: 3px solid rgb(255 107 107 / 75%);
+      outline-offset: 4px;
+    }
+    .hero-image {
+      position: relative;
+      display: grid;
+      min-height: 340px;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 32px;
+      background:
+        radial-gradient(circle at 50% 45%, rgb(226 58 58 / 17%), transparent 56%),
+        linear-gradient(145deg, rgb(255 255 255 / 5%), rgb(255 255 255 / 1%));
+      box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%), 0 32px 70px rgb(0 0 0 / 22%);
+    }
+    .hero-image::before,
+    .hero-image::after {
+      position: absolute;
+      width: 270px;
+      height: 270px;
+      border: 1px solid rgb(255 107 107 / 16%);
+      border-radius: 50%;
+      content: "";
+      pointer-events: none;
+    }
+    .hero-image::after {
+      width: 350px;
+      height: 350px;
+      border-color: rgb(255 255 255 / 7%);
+    }
+    .hero-image img {
+      position: relative;
+      z-index: 1;
+      width: min(82%, 350px);
+      max-height: 300px;
+      object-fit: contain;
+      filter: drop-shadow(0 18px 36px rgb(0 0 0 / 28%));
+    }
+    .site-footer {
+      padding-top: 1rem;
+      padding-bottom: 1.5rem;
+      color: rgb(217 217 217 / 70%);
+      font-size: .78rem;
+      text-align: center;
+    }
+    @media (max-width: 767.98px) {
+      .hero-panel {
+        min-height: auto;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: clamp(1.5rem, 7vw, 2.5rem);
+      }
+      .hero-copy h1 { font-size: clamp(2.5rem, 11vw, 4rem); }
+      .hero-image { min-height: 240px; }
+      .hero-image img { max-height: 220px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar">
+      <div class="container">
+        <a class="brand text-decoration-none" href="/" aria-label="Helicenter ERP, inicio">
+          <img src="/assets/images/logo/logo_helicenter.png" alt="" class="brand-logo">
+          <span class="brand-copy">
+            <span class="brand-name">Helicenter ERP</span>
+            <span class="brand-subtitle">Gestión de inventario</span>
+          </span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="hero-section">
+    <section class="hero-panel" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <span class="hero-label">Portal interno</span>
+        <h1 id="hero-title">Sistema de Gestión y <span>Control de Inventario</span></h1>
+        <p>
+          Plataforma centralizada para la administración de repuestos, categorías y registro de movimientos del hangar. El acceso a este módulo está estrictamente restringido al personal autorizado.
+        </p>
+        <div class="hero-actions">
+          <a href="/login" class="access-button text-decoration-none">
+            Acceder al Sistema
+          </a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="/assets/images/logo/logo_helicenter.png" alt="Logotipo de Helicenter">
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    © 2026 Helicenter. Todos los derechos reservados. Sistema de uso interno.
+  </footer>
+</body>
+</html>
